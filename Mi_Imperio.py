@@ -33,7 +33,6 @@ class NaveInvalidaError(ImperioError):
 
 class StockInsuficienteError(ImperioError):
     pass
-
 #clases con enumeración
 
 class Ubicacion(Enum):
@@ -54,16 +53,16 @@ class Repuesto:
     def __init__(self, nombre: str, proveedor: str, cantidad: int, precio: float):
 
         if not nombre or not isinstance(nombre, str):
-            raise RepuestoInvalidoError()
+            raise RepuestoInvalidoError("el nombre del repuesto no es valido")
 
         if not proveedor or not isinstance(proveedor, str):
-            raise RepuestoInvalidoError()
+            raise RepuestoInvalidoError("el nombre del proveedor no es valido")
 
         if not isinstance(cantidad, int) or cantidad < 0:
-            raise CantidadInvalidaError()
+            raise CantidadInvalidaError("la cantidad no es valida")
 
         if not isinstance(precio, (int, float)) or precio < 0:
-            raise PrecioInvalidoError()
+            raise PrecioInvalidoError("el precio no es valido")
 
         self.nombre = nombre
         self.proveedor = proveedor
@@ -73,8 +72,7 @@ class Repuesto:
     def actualizar_cantidad(self, nueva_cantidad):
         #si la nueva cantidad no es un int o si la cantidad que queremos añadir es negativa 
         if not isinstance(nueva_cantidad, int) or nueva_cantidad < 0:
-            print("la cantidad entrada no es valida")
-            raise CantidadInvalidaError()
+            raise CantidadInvalidaError("la cantidad entrada no es valida")
 
         self._cantidad = nueva_cantidad
 
@@ -97,8 +95,7 @@ class Almacen:
             raise ImperioError()
 
         if not localizacion:
-            "la localización del almacen no puede estar vacío."
-            raise ImperioError()
+            raise ImperioError("la localización del almacen no puede estar vacío.")
 
         self.nombre = nombre
         self.localizacion = localizacion
@@ -106,20 +103,17 @@ class Almacen:
 
     def agregar_repuesto(self, repuesto: Repuesto):
         if not isinstance(repuesto, Repuesto):
-            print("El objeto proporcionado no es una instancia de Repuesto.")
-            raise RepuestoInvalidoError()
+            raise RepuestoInvalidoError("El objeto proporcionado no es una instancia de Repuesto.")
 
         if self.buscar_repuestos(repuesto) is not None:
-            print("El objeto proporcionado ay está en la lista de los Repuestos.")
-            raise RepuestoDuplicadoError()
+            raise RepuestoDuplicadoError("El objeto proporcionado ay está en la lista de los Repuestos.")
 
         self.catalogo.append(repuesto)
 
     def buscar_repuestos(self, repuesto: Repuesto) :
 
         if not isinstance(repuesto, Repuesto):
-            print("El objeto proporcionado no es una instancia de Repuesto.")
-            raise RepuestoInvalidoError()
+            raise RepuestoInvalidoError("El objeto proporcionado no es una instancia de Repuesto.")
 
         for r in self.catalogo:
 
@@ -133,7 +127,7 @@ class Almacen:
         encontrado = self.buscar_repuestos(repuesto)
 
         if encontrado is None:
-            raise RepuestoNoEncontradoError()
+            raise RepuestoNoEncontradoError("el repuesto no se encuentra en el almacen")
 
         encontrado.actualizar_cantidad(nueva_cantidad)
 
@@ -217,8 +211,6 @@ class CazaEstelar(Nave):
 
         self.dotacion = dotacion
 
-#mi imperio
-
 class MiImperio:
 
     def __init__(self):
@@ -226,98 +218,170 @@ class MiImperio:
         self._almacenes: list[Almacen] = []
 
     def agregar_nave(self, nave: Nave):
-        #añadir una nave
         if not isinstance(nave, Nave):
-            raise NaveInvalidaError()
-
+            raise NaveInvalidaError("Objeto no válido como nave")
         self._naves.append(nave)
 
     def agregar_almacen(self, almacen: Almacen):
-        #añadir un almacen a la lista de almacenes
         if not isinstance(almacen, Almacen):
-            raise ImperioError()
-
+            raise ImperioError("Objeto no válido como almacén")
         self._almacenes.append(almacen)
 
     def _verificar_almacenes(self):
-        #verificar si hay almacenes
         if not self._almacenes:
-            raise AlmacenNoDisponibleError()
+            raise AlmacenNoDisponibleError("No hay almacenes disponibles")
 
     def _verificar_nave(self, nave: Nave):
-        #verificar si hay 
         if not isinstance(nave, Nave):
-            print("el valor introduciod no hace parte de la clase Nave")
-            raise NaveInvalidaError()
+            raise NaveInvalidaError("Objeto no es una nave")
 
         if nave not in self._naves:
-            print("la nave introducida no esta en la ista de las naves")
-            raise NaveNoRegistradaError()
-    #para los comandantes:
+            raise NaveNoRegistradaError("La nave no está registrada")
 
-    def consultar_repuestos(self, nave: Nave):
-
-        self._verificar_nave(nave)
-        self._verificar_almacenes()
-
-        almacen = self._almacenes[0]
-
-        resultado = []
-
-        for repuesto in nave.catalogo_repuestos:
-
-            encontrado = almacen.buscar_repuestos(repuesto)
-
-            if encontrado:
-                resultado.append(encontrado)
-
-        return resultado
 
     def adquirir_repuesto(self, repuesto: Repuesto, cantidad: int):
-        #en caso de introducir un elemento que no pertenece a la clase Repuesto
+
         if not isinstance(repuesto, Repuesto):
-            raise RepuestoInvalidoError()
-        #en el caso donde la antidad adquirida es menor que 0 o que la cantidad no es un entero
+            raise RepuestoInvalidoError("Repuesto no válido")
+
         if not isinstance(cantidad, int) or cantidad <= 0:
-            raise CantidadInvalidaError()
-        #verificar que hay almacenes en la Clase MiImperio
+            raise CantidadInvalidaError("Cantidad inválida")
+
         self._verificar_almacenes()
 
         for almacen in self._almacenes:
-            #recorre todo los almacenes  ,buscando por el repuesto que queremos adquirir
             encontrado = almacen.buscar_repuestos(repuesto)
 
-            if encontrado ==True :
-                #añadimos la cantidad del repuesto adquirido a la cantidad anterior dentro del almacen
-                nueva_cantidad = encontrado.obtener_cantidad() + cantidad
-                almacen.actualizar_stock(encontrado, nueva_cantidad)
+            if encontrado is not None:
+                stock_actual = encontrado.obtener_cantidad()
 
-        raise RepuestoNoEncontradoError()
+                if stock_actual < cantidad:
+                    raise StockInsuficienteError("Stock insuficiente")
 
-    def listar_repuesto(self):
-        #verifica que en la clase MiIperio hay almacenes para recorrer y buscar repuestos
+                nuevo_stock = stock_actual - cantidad
+                almacen.actualizar_stock(encontrado, nuevo_stock)
+
+                return True  # éxito
+
+        raise RepuestoNoEncontradoError("Repuesto no encontrado")
+
+    def listar_repuestos(self):
         self._verificar_almacenes()
-        lista_respuesto = []
 
-        for almacen in self._almacenes:
-            #devolver el catalogo de repuesto de cada almacen dentro de la clase MiImperio
-            lista_respuesto.append(almacen.catalogo)
+        return [almacen.catalogo for almacen in self._almacenes]
 
-        return lista_respuesto
-    
-    def eliminar_repuesto(self,repuesto:Repuesto):
+    def eliminar_repuesto(self, repuesto: Repuesto):
+
         if not isinstance(repuesto, Repuesto):
-            raise RepuestoInvalidoError()
+            raise RepuestoInvalidoError("Repuesto no válido")
+
         self._verificar_almacenes()
 
         for almacen in self._almacenes:
-            #recorremos los almacenes presentes en la clase MiImperio
             encontrado = almacen.buscar_repuestos(repuesto)
-            almacen_encontrado=almacen
-            #guardo las 2 variables del almacen y el repuesto 
-            if encontrado ==True :
-                #quito el repuesto , y devuelvo un mensaje 
-                almacen_encontrado.catalogo.pop(encontrado)
-                print(f"el repuesto {repuesto} ha sido eliminado del almacen {almacen_encontrado}")
 
-        raise RepuestoNoEncontradoError()
+            if encontrado is not None:
+                almacen.catalogo.remove(encontrado)
+                return True
+
+        raise RepuestoNoEncontradoError("Repuesto no encontrado")
+    
+
+if __name__ == "__main__":
+
+    print("=== INICIO DEL SISTEMA IMPERIAL ===")
+
+    sistema = MiImperio() #crear la instancia MiImperio
+    try:
+
+        print("\n*****CREAR ALMACEN Y REPUESTOS*****")
+        almacen1 = Almacen("Almacen Central", "Zona Norte")
+
+        r1 = Repuesto("motor", "Corellia", 10, 5000)
+        r2 = Repuesto("laser", "Kuat", 5, 2000)
+        r3 = Repuesto("escudo", "Naboo", 2, 8000)
+
+        almacen1.agregar_repuesto(r1)
+        almacen1.agregar_repuesto(r2)
+        almacen1.agregar_repuesto(r3)
+
+        sistema.agregar_almacen(almacen1)
+
+        print("*****Almacén y repuestos creados*****")
+
+        
+        print("\n**crear Naves**")
+        nave1 = NaveEstelar("ID-001", 1234, "Destructor", 1000, 200, Clase.EJECUTOR)
+        nave2 = CazaEstelar("ID-002", 5678, "TIE Fighter", 1)
+
+        sistema.agregar_nave(nave1)
+        sistema.agregar_nave(nave2)
+
+        print("*****Naves registradas******")
+
+        print("\n*****Compra correcta*****")
+        sistema.adquirir_repuesto(r1, 3)
+        print(f"Stock restante motor: {r1.obtener_cantidad()}")
+
+        # compra total
+        print("Compra total")
+        sistema.adquirir_repuesto(r3, 2)
+        print(f"Stock restante escudo: {r3.obtener_cantidad()}")
+
+        # comprar con un stock insuficiente
+        print("\nCompra con error")
+        try:
+            sistema.adquirir_repuesto(r2, 100)
+        except ImperioError as e:
+            print(f"-Error: {e}")
+
+        #respuesto no valido
+        print("Error tipo de repuesto")
+        try:
+            sistema.adquirir_repuesto("no_es_repuesto", 1)
+        except ImperioError as e:
+            print(f"-Error: {e}")
+
+        # cantidad no valida
+        print("Error cantidad negativa")
+        try:
+            sistema.adquirir_repuesto(r1, -5)
+        except ImperioError as e:
+            print(f"-Error: {e}")
+
+        #listar los respuestos
+        print("\nListado de repuestos")
+        for catalogo in sistema.listar_repuestos():
+            for rep in catalogo:
+                print(rep)
+
+        #eliminar un repuesto
+        print("\nEliminando repuesto")
+        sistema.eliminar_repuesto(r2)
+        print("Repuesto eliminado")
+
+        print("\n******** Detección de errores:**********")
+        print("\nError eliminando repuesto inexistente")
+        try:
+            sistema.eliminar_repuesto(r2)
+        except ImperioError as e:
+            print(f"Error: {e}")
+
+        #crear un repuesto no valido
+        print("\ncreando repuesto inválido")
+        try:
+            r4 = Repuesto("", "ProveedorX", 5, 100)
+        except ImperioError as e:
+            print(f"-Error: {e}")
+
+        # ERROR: DUPLICAR REPUESTO
+        print("\nError repuesto duplicado")
+        try:
+            almacen1.agregar_repuesto(r1)
+        except ImperioError as e:
+            print(f"-Error:{e}")
+
+    except ImperioError as e:
+        print(f"Error del sistema: {e}")
+
+    print("\n=== FIN DEL SISTEMA ===")
